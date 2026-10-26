@@ -69,179 +69,53 @@ body{margin:0;padding:20px}
 .bold{font-weight:700}.redtxt{color:#d00000}
 .tip{background:#f7f7f8;border:1px solid #e1e2e5;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;line-height:1.65;color:#555}
 kbd{font:11px inherit;border:1px solid #c8cbd0;border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:#fff}
+.head{padding:10px 14px}
+.head h1{font-size:17px;margin:0}
+.head-row{gap:8px}
+.head .action{padding:7px 10px;font-size:12px;min-height:36px}
+.pane{padding:14px}
+.filename-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.filename-heading .label{margin:0;font-size:13px}
+.filename-options{margin:0;font-size:12px;white-space:nowrap}
+.filename-options label{display:flex;align-items:center;gap:4px;min-height:32px;cursor:pointer}
+.filename-options input{margin:0;width:16px;height:16px;accent-color:#111}
+.filename-row{margin:0}
+.filename-input{font:inherit;font-size:16px;padding:8px 10px;min-width:0}
+.filename-hint{margin:5px 0 10px;line-height:1.4}
+.body-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;position:relative;margin-bottom:4px}
+.body-heading>.label{font-size:13px;margin:0}
+.help-details{margin:0;font-size:12px}
+.help-details summary{padding:6px 0}
+.help-details[open]{flex:1}
+.help-details[open] .help-content{margin-top:4px}
+.toolbar{gap:4px;margin:0 0 6px}
+.toolbar-primary{order:0;display:flex;gap:4px;flex-direction:row}
+.toolbar-secondary{order:1;gap:4px}
+.toolbar-secondary .toolbtn,.toolbar-secondary .page-break-btn{flex:1;min-width:44px}
+.toolbtn,.level-group .toolbtn,.no-marker-btn{min-height:40px;padding:5px 8px;font-size:14px;line-height:1.2;touch-action:manipulation}
+.level-group .toolbtn{min-width:36px}
+.level-group .bullet-choice{font-size:17px}
+.no-marker-btn{min-width:56px;flex:0 0 auto}
+.toolbar-bottom{margin-top:6px}
+.editor{padding:10px;min-height:360px}
+.actions{gap:5px;margin-top:10px}
+.actions .action{flex:1;min-width:0;padding:9px 6px;font-size:13px;min-height:40px}
 @media(max-width:820px){
-.head-row{align-items:flex-start}
-.head{padding:14px 12px 10px}
-html,body{max-width:100%;overflow-x:hidden}
-body{padding:6px}
-.app{width:100%;max-width:100%;margin:0;overflow:hidden}
-.main{grid-template-columns:1fr;min-width:0}
-.pane{padding:14px 12px;min-width:0;overflow:hidden}
-.pane+.pane{border-left:0;border-top:1px solid #e8e9ec}
-.page{aspect-ratio:auto;min-height:520px}
-
-.filename-row{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  gap:6px;
-  width:100%;
-  min-width:0;
-}
-.filename-input{min-width:0;width:100%}
-.today-btn{
-  max-width:126px;
-  padding-left:10px;
-  padding-right:10px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.tip,.help{
-  width:100%;
-  max-width:100%;
-  overflow-wrap:anywhere;
-  word-break:break-word;
-}
-.tip{margin-bottom:8px}
-.help{margin-bottom:8px}
-
-.toolbar{
-  gap:8px;
-  margin-top:6px;
-  margin-bottom:8px;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-}
-.toolbar-secondary{
-  order:1;
-  display:flex;
-  gap:8px;
-  width:100%;
-  min-width:0;
-}
-.toolbar-secondary .toolbtn{
-  min-height:42px;
-  min-width:0;
-  flex:1 1 0;
-  padding:8px 6px;
-  font-size:15px;
-}
-
-.toolbar-primary{
-  order:2;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  width:100%;
-  min-width:0;
-}
-.level-group{
-  width:100%;
-  min-width:0;
-  flex:0 0 auto;
-}
-.level-group .toolbtn{
-  min-width:0;
-  min-height:48px;
-  flex:1 1 0;
-  padding:8px 4px;
-  font-size:20px;
-}
-.level-group .toolbtn[data-level="0"]{font-size:16px}
-.no-marker-btn{
-  width:100%;
-  min-width:0;
-  min-height:42px;
-  padding:8px 10px;
-  font-size:15px;
-  white-space:nowrap;
-}
-
-.toolbar-bottom .toolbar-primary{order:1}
-.toolbar-bottom .toolbar-secondary{order:2}
-
-.editor{
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  min-height:420px;
-  padding:12px;
-  overflow-x:hidden;
-}
-.actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  width:100%;
-}
-.actions .action{
-  flex:1 1 140px;
-  min-width:0;
-}
-}
-.main{grid-template-columns:1fr}
-.pane{padding:16px 14px}
-.pane+.pane{border-left:0;border-top:1px solid #e8e9ec}
-.page{aspect-ratio:auto;min-height:520px}
-.filename-row{gap:6px}
-.today-btn{padding-left:10px;padding-right:10px}
-
-.toolbar{gap:8px;margin-top:6px;margin-bottom:8px}
-.toolbar-secondary{order:1}
-.toolbar-primary{order:2;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:100%}
-.level-group{width:100%;min-width:0}
-.level-group .toolbtn{
-  min-width:0;
-  min-height:50px;
-  padding:8px 6px;
-  font-size:20px;
-}
-.level-group .toolbtn[data-level="0"]{
-  font-size:16px;
-}
-.no-marker-btn{
-  min-height:50px;
-  min-width:86px;
-  padding:8px 10px;
-  font-size:15px;
-  line-height:1.25;
-}
-.toolbar-secondary{
-  display:flex;
-  gap:8px;
-  width:100%;
-}
-.toolbar-secondary .toolbtn{
-  min-height:42px;
-  min-width:0;
-  flex:1;
-  font-size:15px;
-}
-.toolbar-primary{margin-bottom:0}
-.editor{min-height:420px;padding:12px}
-.help{margin-bottom:8px}
-.tip{margin-bottom:8px}
-}
-.main{grid-template-columns:1fr}
-.pane{padding:16px 14px}
-.pane+.pane{border-left:0;border-top:1px solid #e8e9ec}
-.page{aspect-ratio:auto;min-height:520px}
-.filename-row{gap:6px}
-.today-btn{padding-left:10px;padding-right:10px}
-.toolbar{margin-top:6px;margin-bottom:6px;gap:5px}
-.level-group{flex:1}
-.level-group .toolbtn{flex:1;min-width:0;padding-left:8px;padding-right:8px}
-#noMarkerBtn{flex:1}
-.editor{min-height:420px;padding:12px}
-.help{margin-bottom:8px}
-.tip{margin-bottom:8px}
-}
-
-@media(max-width:820px){
-.toolbar-bottom .toolbar-primary{order:1}
-.toolbar-bottom .toolbar-secondary{order:2}
+  body{padding:0;background:#fff}
+  .app{border:0;border-radius:0;box-shadow:none;width:100%;min-width:0}
+  .head{padding:6px 10px}
+  .head h1{font-size:15px}
+  .head .action{min-height:32px;padding:5px 8px}
+  .main{grid-template-columns:minmax(0,1fr)}
+  .pane{padding:8px 10px;min-width:0}
+  .pane+.pane{border-left:0;border-top:1px solid #e8e9ec}
+  .filename-hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+  .filename-options{font-size:12px}
+  .toolbtn{border-radius:5px}
+  .editor{min-height:320px}
+  .line{font-size:16px}
+  .preview-wrap{padding:8px;min-height:0}
+  .page{aspect-ratio:auto;min-height:400px}
 }
 
 .line[data-page-break="true"]::before,
@@ -260,47 +134,55 @@ body{padding:6px}
 .prow.rule { display: block; border-bottom: 1px solid #667085; margin: 12px 0; min-height: 1px; }
 .prow.blank.page-break { height: auto; min-height: 1.35em; }
 .page-break-btn.active { background: #111; color: #fff; }
-.toolbar-secondary .page-break-btn { flex: 2 1 auto; }
+
 @media print {
   .prow.page-break { break-before: page; page-break-before: always; }
   .prow.page-break::before { display: none; }
 }
+/* Controls stay outside the only scrolling region, including on mobile. */
+body{padding:0;height:100dvh;overflow:hidden}
+.app{height:100dvh;display:flex;flex-direction:column;border:0;border-radius:0;overflow:hidden}
+.controls{flex:none;padding:6px 10px;background:#fff;border-bottom:1px solid #d8dbe0;z-index:2}
+.controls .filename-heading{margin-bottom:2px}
+.controls .filename-input{padding:6px 9px}
+.controls .filename-hint{margin:3px 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.controls .actions{margin:5px 0 0}
+.controls .toolbar{margin:0;gap:4px}
+.workspace{flex:1;min-height:0;overflow:auto;overscroll-behavior-y:contain;scroll-padding:10px;padding-bottom:env(safe-area-inset-bottom)}
+.main{align-items:start}
+.pane{min-width:0}
+.editor{min-height:45dvh}
+.save-status{font-size:12px;color:#9a3412;margin:0 10px}.save-status:empty{display:none}
+.workspace-footer{display:flex;align-items:start;justify-content:space-between;gap:12px;padding:10px;border-top:1px solid #e8e9ec}
+.workspace-footer .help-details{flex:1}
+.workspace-footer .action{flex:none;font-size:12px;min-height:40px}
+.preview-heading{font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between}
+.preview-heading output{font-weight:400;color:#667085}
+.preview-wrap{min-height:0;padding:8px;overflow:hidden}
+#previewBody{display:flex;flex-direction:column;align-items:center;gap:20px}
+.page-frame{position:relative;flex:none}
+.page{position:absolute;top:0;left:0;width:793.7px;height:1122.52px;min-height:0;aspect-ratio:auto;padding:132.33px 113.4px 113.4px;overflow:hidden;transform-origin:top left;font-size:11pt;line-height:1.35}
+.page-body{height:100%;position:relative;display:flow-root}
+.page .prow{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.page .prow>span{min-width:0}
+.page .prow.continuation .pmark{visibility:hidden}
+.page-number{position:absolute;bottom:35px;left:0;width:100%;text-align:center;font-size:10px;color:#777}
+@media(max-width:820px){.pane{padding:8px 10px}.main{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="head">
-    <div class="head-row">
-      <div><h1>文書作成ツール</h1><p class="help">議事録・報告書・連絡事項・メモなどを作成し、Word形式で保存できます。</p></div>
-      <button class="action reset-top" id="resetBtn" type="button">リセット</button>
-    </div>
-  </div>
-  <div class="main">
-    <section class="pane">
-      <label class="label" for="filenameInput">ファイル名（任意）</label>
-      <div class="filename-row">
-        <input id="filenameInput" class="filename-input" type="text" placeholder="空欄の場合は本文の先頭行を使用">
+  <div class="controls" aria-label="文書の操作">
+      <div class="filename-heading">
+        <label class="label" for="filenameInput">ファイル名（任意）</label>
+        <div class="filename-options">
+          <label><input id="includeTodayDate" type="checkbox"> 今日の日付</label>
+        </div>
       </div>
-
-      <div class="filename-options">
-        <label for="filenameDate">日付（任意）</label>
-        <input id="filenameDate" type="date">
-        <button class="toolbtn today-btn" id="todayFilenameBtn" type="button">今日の日付</button>
+      <div class="filename-row">
+        <input id="filenameInput" class="filename-input" type="text" placeholder="空欄なら本文の先頭行">
       </div>
       <p class="filename-hint">保存名：<output id="filenamePreview"></output></p>
-      <div class="label">本文</div>
-      <details class="help-details">
-        <summary>使い方</summary>
-        <div class="help-content">
-          <p>ファイル名は本文には表示されません。空欄の場合は本文の先頭行を使います。日付を指定すると、保存名の末尾に「_20261026」の形式で追加します。本文に見出しを付けたい場合は先頭行に入力してください。</p>
-          <p>行を選んで「本文」または記号ボタンを押すと、行の種類を変更できます。記号なしのインデント行は「記号を消す」で作成します。</p>
-          <p>次のページから始めたい行を選び、「改ページ」を押してください。もう一度押すと解除します。区切りはWord保存・読込と下書きにも保持されます。「改ページ」だけの行を入力してEnterを押すか、文章に含めて貼り付けても設定できます。「、形式でコピー」にも改ページ行が含まれます。</p>
-          <p>「水平線」ボタンで線を追加できます。「水平線」または「---」だけの行を入力してEnterを押すか、貼り付けても横線になります。線の行でBackspaceを押すと解除できます。</p>
-          <p>貼り付けでは、行頭の「、」「、、」「、、、」を箇条書きとして解釈します。「、。」「、、。」「、、、。」は同じ階層の記号なし行です。直接入力した読点は通常の文字として扱います。</p>
-          <p>「、形式でコピー」で本文をテキストとしてコピーできます。Enterを押すと、記号なしの本文行が追加されます。入力内容はこのブラウザに自動保存されます。</p>
-        </div>
-      </details>
-
       <div class="toolbar">
         <div class="toolbar-primary">
           <div class="level-group" aria-label="箇条書きの種類">
@@ -309,53 +191,48 @@ body{padding:6px}
             <button class="toolbtn levelbtn bullet-choice" data-level="2" data-marker="circle" type="button" title="第2段">￮</button>
             <button class="toolbtn levelbtn bullet-choice" data-level="3" data-marker="star" type="button" title="第3段">✦</button>
           </div>
-          <button class="toolbtn no-marker-btn" id="noMarkerBtn" type="button">記号を消す</button>
+          <button class="toolbtn no-marker-btn" id="noMarkerBtn" type="button" aria-label="記号を消す" title="記号を消す">記号なし</button>
         </div>
         <div class="toolbar-secondary">
-          <button class="toolbtn page-break-btn" type="button" aria-pressed="false">改ページ</button>
-          <button class="toolbtn rule-btn" type="button">水平線</button>
+          <button class="toolbtn page-break-btn" type="button" aria-pressed="false" aria-label="改ページ" title="この行から改ページ・解除">改頁</button>
+          <button class="toolbtn rule-btn" type="button" aria-label="水平線" title="水平線を挿入">―</button>
           <button class="toolbtn" id="boldBtn" type="button"><b>B</b></button>
           <button class="toolbtn red" id="redBtn" type="button">赤字</button>
           <button class="toolbtn" id="blackBtn" type="button">黒字</button>
         </div>
       </div>
-      <div id="editor" class="editor" aria-label="本文エディタ"></div>
-
-      <div class="toolbar toolbar-bottom" aria-label="本文操作（下部）">
-        <div class="toolbar-primary">
-          <div class="level-group" aria-label="箇条書きの種類">
-            <button class="toolbtn levelbtn mirror-levelbtn" data-level="0" type="button">本文</button>
-            <button class="toolbtn levelbtn bullet-choice mirror-levelbtn" data-level="1" data-marker="small-square" type="button" title="第1段">￭</button>
-            <button class="toolbtn levelbtn bullet-choice mirror-levelbtn" data-level="2" data-marker="circle" type="button" title="第2段">￮</button>
-            <button class="toolbtn levelbtn bullet-choice mirror-levelbtn" data-level="3" data-marker="star" type="button" title="第3段">✦</button>
-          </div>
-          <button class="toolbtn no-marker-btn mirror-no-marker" type="button">記号を消す</button>
-        </div>
-        <div class="toolbar-secondary">
-          <button class="toolbtn page-break-btn" type="button" aria-pressed="false">改ページ</button>
-          <button class="toolbtn rule-btn" type="button">水平線</button>
-          <button class="toolbtn mirror-bold" type="button"><b>B</b></button>
-          <button class="toolbtn red mirror-red" type="button">赤字</button>
-          <button class="toolbtn mirror-black" type="button">黒字</button>
-        </div>
-      </div>
-
       <div class="actions">
         <button class="action primary" id="downloadBtn">Wordで保存</button>
-        <button class="action secondary" id="copyDotTextBtn">、形式でコピー</button>
+        <button class="action secondary" id="copyDotTextBtn" aria-label="、形式でコピー" title="、形式でコピー">コピー</button>
         <button class="action secondary" id="importBtn">Wordを開く</button>
         <input id="wordFileInput" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
       </div>
-    </section>
-
-    <section class="pane">
-      <div class="label">プレビュー</div>
-      <div class="preview-wrap">
-        <div class="page">
-          <div id="previewBody"></div>
+  </div>
+  <div class="workspace" id="workspace">
+    <div class="main">
+      <section class="pane editor-pane" aria-label="文書の編集">
+        <div id="editor" class="editor" aria-label="本文エディタ"></div>
+      </section>
+      <section class="pane preview-pane" aria-label="文書のプレビュー">
+        <div class="preview-heading">プレビュー <output id="pageCount"></output></div>
+        <div class="preview-wrap"><div id="previewBody"></div></div>
+      </section>
+    </div>
+    <p id="saveStatus" class="save-status" role="status"></p>
+    <footer class="workspace-footer">
+      <details class="help-details">
+        <summary>使い方</summary>
+        <div class="help-content">
+          <p>ファイル名は本文には表示されません。空欄の場合は本文の先頭行を使います。「今日の日付」を選ぶと、日本時間の今日の日付を保存名の末尾に「_20261026」の形式で追加します。本文に見出しを付けたい場合は先頭行に入力してください。</p>
+          <p>行を選んで「本文」または記号ボタンを押すと、行の種類を変更できます。記号なしのインデント行は「記号なし」で作成します。</p>
+          <p>次のページから始めたい行を選び、「改頁」を押してください。もう一度押すと解除します。区切りはWord保存・読込と下書きにも保持されます。「改ページ」だけの行を入力してEnterを押すか、文章に含めて貼り付けても設定できます。「、形式でコピー」にも改ページ行が含まれます。</p>
+          <p>「―」（水平線）ボタンで線を追加できます。「水平線」または「---」だけの行を入力してEnterを押すか、貼り付けても横線になります。線の行でBackspaceを押すと解除できます。</p>
+          <p>貼り付けでは、行頭の「、」「、、」「、、、」を箇条書きとして解釈します。「、。」「、、。」「、、、。」は同じ階層の記号なし行です。直接入力した読点は通常の文字として扱います。</p>
+          <p>「、形式でコピー」で本文をテキストとしてコピーできます。Enterを押すと、記号なしの本文行が追加されます。入力内容はこのブラウザに自動保存されます。</p>
         </div>
-      </div>
-    </section>
+      </details>
+      <button class="action secondary" id="resetBtn" type="button">リセット</button>
+    </footer>
   </div>
 </div>
 
@@ -379,7 +256,7 @@ const TEMPLATE_B64='UEsDBBQAAAAIAFkEWl1RFA2VEwEAABIDAAATAAAAW0NvbnRlbnRfVHlwZXNd
 
 const editor = document.getElementById('editor');
 const filenameInput = document.getElementById('filenameInput');
-const filenameDate = document.getElementById('filenameDate');
+const includeTodayDate = document.getElementById('includeTodayDate');
 const filenamePreview = document.getElementById('filenamePreview');
 const previewBody = document.getElementById('previewBody');
 
@@ -860,6 +737,12 @@ editor.addEventListener('paste',e=>{
   updateLevelButtons(prev);
   saveEditorSelection();
 });
+// Tapping the blank editor surface must also open the keyboard on touch devices.
+editor.addEventListener('click',e=>{
+  if(e.target.closest('.text'))return;
+  const line=e.target.closest('.line') || editor.lastElementChild;
+  if(line)placeCaret(line.querySelector('.text'));
+});
 editor.addEventListener('click',()=>{ const l=currentLine(); if(l){ editor.querySelectorAll('.line').forEach(x=>x.classList.toggle('selected',x===l)); updateLevelButtons(l); saveEditorSelection(); } });
 
 function setSelectedLevel(uiLevel,markerChoice=null){
@@ -986,11 +869,7 @@ document.querySelectorAll('.mirror-black').forEach(btn=>{
 });
 
 filenameInput.addEventListener('input',render);
-filenameDate.addEventListener('input',render);
-document.getElementById('todayFilenameBtn').addEventListener('click',()=>{
-  filenameDate.value=todayDate();
-  render();
-});
+includeTodayDate.addEventListener('change',render);
 
 const STORAGE_KEY='generalDocumentEditorState_v1';
 let isRestoring=false;
@@ -1024,13 +903,17 @@ function saveStateNow(){
   if(isRestoring)return;
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify({
-      version:22,
+      version:23,
       filename:filenameInput.value,
-      filenameDate:filenameDate.value,
+      includeTodayDate:includeTodayDate.checked,
       rows:dataRows(),
       savedAt:new Date().toISOString()
     }));
-  }catch(e){ console.warn('ローカル保存に失敗しました',e); }
+    document.getElementById('saveStatus').textContent='';
+  }catch(e){
+    document.getElementById('saveStatus').textContent='下書き保存は使えません。Wordで保存してください。';
+    console.warn('ローカル保存に失敗しました',e);
+  }
 }
 
 function scheduleSave(){
@@ -1040,14 +923,14 @@ function scheduleSave(){
 }
 
 function restoreState(){
-  const raw=localStorage.getItem(STORAGE_KEY);
-  if(!raw)return false;
   try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return false;
     const st=JSON.parse(raw);
     if(!st || !Array.isArray(st.rows))return false;
     isRestoring=true;
     filenameInput.value=st.filename||'';
-    filenameDate.value=st.filenameDate||'';
+    includeTodayDate.checked=st.includeTodayDate ?? !!st.filenameDate;
     // Preserve the former heading as ordinary body text in older drafts.
     const rows=[...st.rows];
     if(st.version<22 && st.title && st.title!=='文書'){
@@ -1069,10 +952,10 @@ function resetAll(){
   clearTimeout(saveTimer);
   isRestoring=true;
   filenameInput.value='';
-  filenameDate.value='';
+  includeTodayDate.checked=false;
   resetEditor();
   render();
-  localStorage.removeItem(STORAGE_KEY);
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){console.warn('下書きの削除に失敗しました',e);}
   isRestoring=false;
 }
 
@@ -1176,8 +1059,9 @@ async function importDocx(file){
     const importedName=(file.name||'').replace(/\.docx$/i,'');
     const datedName=importedName.match(/^(.*)_(\d{4})(\d{2})(\d{2})$/);
     isRestoring=true;
-    filenameInput.value=datedName?datedName[1]:importedName;
-    filenameDate.value=datedName?`${datedName[2]}-${datedName[3]}-${datedName[4]}`:'';
+    const hasToday=!!datedName && datedName.slice(2).join('')===todayDate().replace(/-/g,'');
+    filenameInput.value=hasToday?datedName[1]:importedName;
+    includeTodayDate.checked=hasToday;
     setRows(bodyRows);
     render();
     isRestoring=false;
@@ -1272,28 +1156,87 @@ function dataRows(){
 function renderRuns(el,runs){
   runs.forEach(r=>{const s=document.createElement('span');s.textContent=r.text;if(r.bold)s.classList.add('bold');if(r.red)s.classList.add('redtxt');el.appendChild(s);});
 }
+function previewRow(r,runs=r.runs,continuation=false){
+  const row=document.createElement('div');
+  if(r.type==='rule'){
+    row.className='prow rule';row.setAttribute('role','separator');return row;
+  }
+  if(!r.text){row.className='prow blank';return row;}
+  row.className=r.type==='plain'?'prow plain':`prow lv${r.level+1} ${r.type==='continue'?'cont':''}`;
+  if(continuation)row.classList.add('continuation');
+  if(r.type!=='plain'){
+    const mark=document.createElement('span');mark.className='pmark';
+    mark.textContent=markerFor(r.level,r.marker);row.appendChild(mark);
+  }
+  const text=document.createElement('span');renderRuns(text,runs);row.appendChild(text);
+  return row;
+}
+function fitPreviewPages(){
+  const available=Math.max(1,previewBody.clientWidth);
+  const scale=Math.min(1,available/793.7);
+  previewBody.querySelectorAll('.page-frame').forEach(frame=>{
+    frame.style.width=`${793.7*scale}px`;
+    frame.style.height=`${1122.52*scale}px`;
+    frame.firstElementChild.style.transform=`scale(${scale})`;
+  });
+}
 function render(){
   filenamePreview.textContent=filename();
-  previewBody.innerHTML='';
-  dataRows().forEach(r=>{
-    if(r.type==='rule'){
-      const rule=document.createElement('div');
-      rule.className='prow rule'+(r.pageBreakBefore?' page-break':'');
-      rule.setAttribute('role','separator');
-      previewBody.appendChild(rule);return;
+  previewBody.replaceChildren();
+  let body;
+  let count=0;
+  function newPage(manual=false){
+    const frame=document.createElement('div');frame.className='page-frame';
+    const page=document.createElement('div');page.className='page'+(manual?' page-break':'');
+    page.setAttribute('aria-label',`${++count}ページ`);
+    body=document.createElement('div');body.className='page-body';
+    const number=document.createElement('div');number.className='page-number';number.textContent=count;
+    page.append(body,number);frame.appendChild(page);previewBody.appendChild(frame);
+  }
+  function fits(row){return row.offsetTop+row.offsetHeight<=body.clientHeight;}
+  newPage();
+  for(const r of dataRows()){
+    if(r.pageBreakBefore)newPage(true);
+    let row=previewRow(r);body.appendChild(row);
+    if(fits(row))continue;
+    // Keep short paragraphs together; split paragraphs taller than a page.
+    if(row.offsetHeight<=body.clientHeight){
+      row.remove();newPage();body.appendChild(row);continue;
     }
-    if(!r.text){
-      const b=document.createElement('div');b.className='prow blank'+(r.pageBreakBefore?' page-break':'');previewBody.appendChild(b);return;
+    row.remove();
+    const parts=r.runs.map(run=>({...run,chars:Array.from(run.text)}));
+    const length=parts.reduce((n,run)=>n+run.chars.length,0);
+    function sliceRuns(start,end){
+      const runs=[];let offset=0;
+      for(const run of parts){
+        const text=run.chars.slice(Math.max(0,start-offset),Math.max(0,end-offset)).join('');
+        if(text)runs.push({text,bold:run.bold,red:run.red});
+        offset+=run.chars.length;if(offset>=end)break;
+      }
+      return runs;
     }
-    const row=document.createElement('div');
-    row.className=r.type==='plain'?'prow plain':`prow lv${r.level+1} ${r.type==='continue'?'cont':''}`;
-    if(r.pageBreakBefore)row.classList.add('page-break');
-    row.dataset.marker=r.marker||'small-square';
-    if(r.type!=='plain'){const m=document.createElement('span');m.className='pmark';m.textContent=markerFor(r.level,r.marker);row.appendChild(m);}
-    const t=document.createElement('span');renderRuns(t,r.runs);row.appendChild(t);previewBody.appendChild(row);
-  });
+    let start=0;
+    while(start<length){
+      let low=0,high=length-start;
+      const fragment=previewRow(r,[],start>0);body.appendChild(fragment);
+      const text=fragment.lastElementChild;
+      while(low<high){
+        const mid=Math.ceil((low+high)/2);
+        text.replaceChildren();renderRuns(text,sliceRuns(start,start+mid));
+        if(fits(fragment))low=mid;else high=mid-1;
+      }
+      if(low===0){fragment.remove();newPage();continue;}
+      text.replaceChildren();renderRuns(text,sliceRuns(start,start+low));
+      start+=low;if(start<length)newPage();
+    }
+  }
+  document.getElementById('pageCount').textContent=`${count}ページ`;
+  fitPreviewPages();
   scheduleSave();
 }
+if(window.ResizeObserver)new ResizeObserver(fitPreviewPages).observe(previewBody);
+else window.addEventListener('resize',fitPreviewPages);
+if(document.fonts?.ready)document.fonts.ready.then(()=>render());
 
 function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));}
 function runXml(run){
@@ -1349,7 +1292,7 @@ function filename(){
   const firstLine=dataRows()[0]?.text.trim()||'';
   const base=filenameInput.value.trim()||firstLine||'文書';
   const safe=base.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').replace(/\.docx$/i,'').replace(/[. ]+$/g,'').trim()||'文書';
-  const date=filenameDate.value.replace(/-/g,'');
+  const date=includeTodayDate.checked?todayDate().replace(/-/g,''):'';
   return `${safe}${date?'_'+date:''}.docx`;
 }
 document.getElementById('downloadBtn').onclick=async()=>{
@@ -1367,6 +1310,10 @@ document.getElementById('downloadBtn').onclick=async()=>{
   }catch(err){console.error(err);alert('Wordファイルの生成に失敗しました。');}
 };
 
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)filenamePreview.textContent=filename();
+});
+setInterval(()=>{filenamePreview.textContent=filename();},60000);
 if(!restoreState()) resetEditor();
 </script>
 </body>
