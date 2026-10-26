@@ -244,6 +244,27 @@ body{padding:6px}
 .toolbar-bottom .toolbar-secondary{order:2}
 }
 
+.line[data-page-break="true"]::before,
+.prow.page-break::before {
+  content: 'ページ区切り';
+  display: block;
+  grid-column: 1 / -1;
+  border-top: 1px dashed #8a94a6;
+  color: #667085;
+  font-size: 12px;
+  margin: 16px 0 8px;
+  padding-top: 4px;
+}
+.line[data-type="rule"] { display: block; padding-left: 0; }
+.line[data-type="rule"] .text { border-bottom: 1px solid #667085; min-height: 1em; }
+.prow.rule { display: block; border-bottom: 1px solid #667085; margin: 12px 0; min-height: 1px; }
+.prow.blank.page-break { height: auto; min-height: 1.35em; }
+.page-break-btn.active { background: #111; color: #fff; }
+.toolbar-secondary .page-break-btn { flex: 2 1 auto; }
+@media print {
+  .prow.page-break { break-before: page; page-break-before: always; }
+  .prow.page-break::before { display: none; }
+}
 </style>
 </head>
 <body>
@@ -268,6 +289,8 @@ body{padding:6px}
         <div class="help-content">
           <p>タイトルは自由に変更できます。「日付を付ける」を押すと、タイトルの先頭に本日の日付（日本時間）を追加・更新します。</p>
           <p>行を選んで「本文」または記号ボタンを押すと、行の種類を変更できます。記号なしのインデント行は「記号を消す」で作成します。</p>
+          <p>次のページから始めたい行を選び、「改ページ」を押してください。もう一度押すと解除します。区切りはWord保存・読込と下書きにも保持されます。「改ページ」だけの行を入力してEnterを押すか、文章に含めて貼り付けても設定できます。「、形式でコピー」にも改ページ行が含まれます。</p>
+          <p>「水平線」ボタンで線を追加できます。「水平線」または「---」だけの行を入力してEnterを押すか、貼り付けても横線になります。線の行でBackspaceを押すと解除できます。</p>
           <p>貼り付けでは、行頭の「、」「、、」「、、、」を箇条書きとして解釈します。「、。」「、、。」「、、、。」は同じ階層の記号なし行です。直接入力した読点は通常の文字として扱います。</p>
           <p>「、形式でコピー」で本文をテキストとしてコピーできます。Enterを押すと、記号なしの本文行が追加されます。入力内容はこのブラウザに自動保存されます。</p>
         </div>
@@ -284,6 +307,8 @@ body{padding:6px}
           <button class="toolbtn no-marker-btn" id="noMarkerBtn" type="button">記号を消す</button>
         </div>
         <div class="toolbar-secondary">
+          <button class="toolbtn page-break-btn" type="button" aria-pressed="false">改ページ</button>
+          <button class="toolbtn rule-btn" type="button">水平線</button>
           <button class="toolbtn" id="boldBtn" type="button"><b>B</b></button>
           <button class="toolbtn red" id="redBtn" type="button">赤字</button>
           <button class="toolbtn" id="blackBtn" type="button">黒字</button>
@@ -302,6 +327,8 @@ body{padding:6px}
           <button class="toolbtn no-marker-btn mirror-no-marker" type="button">記号を消す</button>
         </div>
         <div class="toolbar-secondary">
+          <button class="toolbtn page-break-btn" type="button" aria-pressed="false">改ページ</button>
+          <button class="toolbtn rule-btn" type="button">水平線</button>
           <button class="toolbtn mirror-bold" type="button"><b>B</b></button>
           <button class="toolbtn red mirror-red" type="button">赤字</button>
           <button class="toolbtn mirror-black" type="button">黒字</button>
@@ -365,12 +392,13 @@ function markerFor(level,marker){
   return '✦';
 }
 
-function makeLine({level=0,type='bullet',marker='small-square',html='',first=false}={}){
+function makeLine({level=0,type='bullet',marker='small-square',html='',first=false,pageBreakBefore=false}={}){
   const row=document.createElement('div');
   row.className=`line lv${level+1} ${type==='continue'?'cont':''} ${type==='plain'?'plain':''} ${first?'first':''}`;
-  row.dataset.level=level; row.dataset.type=type; row.dataset.marker=marker; row.dataset.marker=marker;
+  row.dataset.level=level; row.dataset.type=type; row.dataset.marker=marker;
+  if(pageBreakBefore)row.dataset.pageBreak='true';
 
-  if(type!=='plain'){
+  if(type!=='plain' && type!=='rule'){
     const mark=document.createElement('span');
     mark.className='marker';
     mark.textContent=markerFor(level,marker);
@@ -448,7 +476,8 @@ function rebuildLine(line,{level=Number(line.dataset.level),type=line.dataset.ty
   const row=document.createElement('div');
   row.className=`line lv${level+1} ${type==='continue'?'cont':''} ${type==='plain'?'plain':''} ${isFirst?'first':''}`;
   row.dataset.level=level; row.dataset.type=type;
-  if(type!=='plain'){
+  if(line.dataset.pageBreak==='true')row.dataset.pageBreak='true';
+  if(type!=='plain' && type!=='rule'){
     const mark=document.createElement('span');mark.className='marker';mark.textContent=markerFor(level,marker);row.appendChild(mark);
   }
   const text=document.createElement('span');text.className='text';text.contentEditable='true';text.spellcheck=false;text.innerHTML=html;row.appendChild(text);
@@ -470,7 +499,7 @@ function insertAfterCurrent(type){
   const row=document.createElement('div');
   row.className=`line lv${level+1} ${type==='continue'?'cont':''} ${type==='plain'?'plain':''}`;
   row.dataset.level=level;row.dataset.type=type;row.dataset.marker=line?.dataset.marker||'small-square';
-  if(type!=='plain'){
+  if(type!=='plain' && type!=='rule'){
     const mark=document.createElement('span');mark.className='marker';mark.textContent=markerFor(level,row.dataset.marker);row.appendChild(mark);
   }
   const text=document.createElement('span');text.className='text';text.contentEditable='true';text.spellcheck=false;row.appendChild(text);
@@ -547,8 +576,28 @@ editor.addEventListener('keydown',e=>{
       return;
     }
   }
+  if(e.isComposing || e.keyCode===229)return;
   if(e.key==='Enter'){
     e.preventDefault();
+    if(['水平線','---'].includes(text.textContent.trim())){
+      const rule=rebuildLine(line,{level:0,type:'rule'});
+      rule.querySelector('.text').textContent='';
+      const next=makeLine({type:'plain'});
+      rule.after(next);
+      placeCaret(next.querySelector('.text'),false);
+      render(); updateLevelButtons(next); saveEditorSelection();
+      return;
+    }
+    if(text.textContent.trim()==='改ページ'){
+      const row=rebuildLine(line,{level:0,type:'plain'});
+      row.dataset.pageBreak='true';
+      row.querySelector('.text').textContent='';
+      placeCaret(row.querySelector('.text'),false);
+      render();
+      updateLevelButtons(row);
+      saveEditorSelection();
+      return;
+    }
 
     // Enter は常に「第0階層・記号なし」の新しい行。
     const sel=window.getSelection();
@@ -598,6 +647,20 @@ editor.addEventListener('keydown',e=>{
     }
 
     if(caretAtStart){
+      if(line.dataset.type==='rule'){
+        e.preventDefault();
+        const row=rebuildLine(line,{level:0,type:'plain'});
+        placeCaret(row.querySelector('.text'),false);
+        render(); updateLevelButtons(row); saveEditorSelection();
+        return;
+      }
+      if(line.dataset.pageBreak==='true'){
+        e.preventDefault();
+        delete line.dataset.pageBreak;
+        render();
+        updateLevelButtons(line);
+        return;
+      }
       const prev=line.previousElementSibling;
 
       // 前の行がある場合は、通常のエディタと同じく前行末尾へ結合。
@@ -644,7 +707,11 @@ editor.addEventListener('keydown',e=>{
 });
 
 
-editor.addEventListener('input',()=>{
+editor.addEventListener('input',e=>{
+  const line=e.target.closest('.line');
+  if(line?.dataset.type==='rule' && line.querySelector('.text').textContent){
+    line.dataset.type='plain'; line.classList.add('plain');
+  }
   saveEditorSelection();
   render();
 });
@@ -653,6 +720,7 @@ editor.addEventListener('mouseup',saveEditorSelection);
 
 
 function parsePastedLine(text){
+  if(['水平線','---'].includes(text.trim()))return {type:'rule',level:0,marker:'small-square',body:''};
   let type='plain', level=0, marker='small-square', body=text;
 
   // 「。」付き = そのインデント位置で記号なし
@@ -696,22 +764,34 @@ editor.addEventListener('paste',e=>{
     beforeText=before.cloneContents().textContent||'';
 
     const after=document.createRange();
-    after.setStart(range.startContainer,range.startOffset);
     after.selectNodeContents(target);
+    after.setStart(range.endContainer,range.endOffset);
     afterText=after.cloneContents().textContent||'';
   }else{
     beforeText=target.textContent||'';
   }
 
-  const pasted=plain.replace(/\r\n?/g,'\n').split('\n');
-  const first=pasted.shift() ?? '';
+  const pasted=[];
+  let pendingBreak=false;
+  plain.replace(/\r\n?/g,'\n').split('\n').forEach((body,i)=>{
+    // 行の途中に貼り付ける最初の行は文字として扱う。
+    if(body.trim()==='改ページ' && (i>0 || beforeText==='')){
+      pendingBreak=true;
+      return;
+    }
+    pasted.push({body,pageBreakBefore:pendingBreak});
+    pendingBreak=false;
+  });
+  if(pendingBreak)pasted.push({body:'',pageBreakBefore:true});
+  const firstRow=pasted.shift() || {body:'',pageBreakBefore:false};
+  const first=firstRow.body;
 
   // 行頭に貼り付ける場合は、1行目も記法を解釈する。
   let prev=line;
   if(beforeText===''){
     const parsed=parsePastedLine(first);
 
-    if(parsed.type==='plain'){
+    if(parsed.type==='plain' && line.dataset.type!=='rule'){
       target.textContent=parsed.body;
     }else{
       const converted=rebuildLine(line,{
@@ -727,9 +807,11 @@ editor.addEventListener('paste',e=>{
     target.textContent=beforeText + first;
   }
 
+  if(firstRow.pageBreakBefore)prev.dataset.pageBreak='true';
+
   // 2行目以降は、各行ごとに記法を解釈。
   for(const pastedLine of pasted){
-    const parsed=parsePastedLine(pastedLine);
+    const parsed=parsePastedLine(pastedLine.body);
 
     const row=document.createElement('div');
     row.className=`line lv${parsed.level+1} ${
@@ -739,8 +821,9 @@ editor.addEventListener('paste',e=>{
     row.dataset.level=parsed.level;
     row.dataset.type=parsed.type;
     row.dataset.marker=parsed.marker;
+    if(pastedLine.pageBreakBefore)row.dataset.pageBreak='true';
 
-    if(parsed.type!=='plain'){
+    if(parsed.type!=='plain' && parsed.type!=='rule'){
       const mark=document.createElement('span');
       mark.className='marker';
       mark.textContent=markerFor(parsed.level,parsed.marker);
@@ -759,6 +842,10 @@ editor.addEventListener('paste',e=>{
   }
 
   // 元のカーソルより後ろにあった文字は最後の貼り付け行へ戻す。
+  if(prev.dataset.type==='rule' && afterText){
+    const next=makeLine({type:'plain'});
+    prev.after(next); prev=next;
+  }
   const lastText=prev.querySelector('.text');
   if(lastText){
     lastText.textContent=(lastText.textContent||'') + afterText;
@@ -801,7 +888,43 @@ function toggleNoMarker(){
   updateLevelButtons(row);
 }
 
+document.querySelectorAll('.rule-btn').forEach(btn=>{
+  btn.addEventListener('mousedown',e=>e.preventDefault());
+  btn.addEventListener('click',()=>{
+    restoreEditorSelection();
+    const line=currentLine(); if(!line)return;
+    let rule;
+    if(!line.querySelector('.text').textContent){
+      rule=rebuildLine(line,{level:0,type:'rule'});
+    }else{
+      rule=makeLine({type:'rule'}); line.after(rule);
+    }
+    const next=makeLine({type:'plain'}); rule.after(next);
+    placeCaret(next.querySelector('.text'),false);
+    render(); updateLevelButtons(next); saveEditorSelection();
+  });
+});
+
+document.querySelectorAll('.page-break-btn').forEach(btn=>{
+  btn.addEventListener('mousedown',e=>e.preventDefault());
+  btn.addEventListener('click',()=>{
+    restoreEditorSelection();
+    const line=currentLine();
+    if(!line)return;
+    if(line.dataset.pageBreak==='true')delete line.dataset.pageBreak;
+    else line.dataset.pageBreak='true';
+    render();
+    updateLevelButtons(line);
+    saveEditorSelection();
+  });
+});
+
 function updateLevelButtons(line=currentLine()){
+  document.querySelectorAll('.page-break-btn').forEach(btn=>{
+    const active=line?.dataset.pageBreak==='true';
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-pressed',String(active));
+  });
   document.querySelectorAll('.levelbtn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#noMarkerBtn,.mirror-no-marker').forEach(b=>b.classList.remove('active'));
   if(!line)return;
@@ -888,9 +1011,10 @@ function setRows(rows){
   safeRows.forEach((r,i)=>{
     makeLine({
       level:Math.max(0,Math.min(3,Number(r.level)||0)),
-      type:['bullet','continue','plain'].includes(r.type)?r.type:'bullet',
+      type:['bullet','continue','plain','rule'].includes(r.type)?r.type:'bullet',
       marker:r.marker||'small-square',
       html:runsToHtml(r.runs||[]),
+      pageBreakBefore:r.pageBreakBefore===true,
       first:i===0
     });
   });
@@ -1019,7 +1143,11 @@ function parseParagraphXml(p){
       childEls(node,'r').forEach(r=>runs.push(parseRunFromXml(r)));
     }
   }
-  return {level,type,marker,runs:mergeRuns(runs),text:runs.map(x=>x.text).join('')};
+  const pageBreak= pPr && firstDesc(pPr,'pageBreakBefore');
+  const breakValue=pageBreak?.getAttributeNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main','val');
+  const pageBreakBefore=!!pageBreak && !['0','false','off'].includes(breakValue);
+  if(!runs.some(r=>r.text) && pPr && firstDesc(pPr,'pBdr') && firstDesc(firstDesc(pPr,'pBdr'),'bottom'))type='rule';
+  return {level,type,marker,pageBreakBefore,runs:mergeRuns(runs),text:runs.map(x=>x.text).join('')};
 }
 
 async function importDocx(file){
@@ -1043,7 +1171,7 @@ async function importDocx(file){
 
     let bodyRows=paras.slice(titleIndex+1);
     // Skip the spacer paragraph immediately after our generated title.
-    if(bodyRows.length && !bodyRows[0].text.trim()) bodyRows=bodyRows.slice(1);
+    if(bodyRows.length && !bodyRows[0].pageBreakBefore && bodyRows[0].type!=='rule' && !bodyRows[0].text.trim()) bodyRows=bodyRows.slice(1);
     if(!bodyRows.length) bodyRows=[{level:0,type:'plain',marker:'small-square',runs:[]}];
 
     isRestoring=true;
@@ -1069,7 +1197,7 @@ function dotPrefixForRow(row){
 
 function exportDotText(){
   const rows=dataRows();
-  return rows.map(r=>dotPrefixForRow(r) + (r.text||'')).join('\n');
+  return rows.flatMap(r=>[...(r.pageBreakBefore?['改ページ']:[]),r.type==='rule'?'水平線':dotPrefixForRow(r) + (r.text||'')]).join('\n');
 }
 
 async function copyDotText(){
@@ -1135,7 +1263,7 @@ function dataRows(){
   return [...editor.querySelectorAll('.line')].map(line=>{
     const text=line.querySelector('.text');
     const runs=runsFrom(text);
-    return {level:Number(line.dataset.level),type:line.dataset.type,marker:line.dataset.marker||'small-square',runs,text:runs.map(r=>r.text).join('')};
+    return {pageBreakBefore:line.dataset.pageBreak==='true',level:Number(line.dataset.level),type:line.dataset.type,marker:line.dataset.marker||'small-square',runs,text:runs.map(r=>r.text).join('')};
   });
 }
 
@@ -1146,11 +1274,18 @@ function render(){
   previewTitle.textContent=titleInput.value.trim()||defaultTitle();
   previewBody.innerHTML='';
   dataRows().forEach(r=>{
+    if(r.type==='rule'){
+      const rule=document.createElement('div');
+      rule.className='prow rule'+(r.pageBreakBefore?' page-break':'');
+      rule.setAttribute('role','separator');
+      previewBody.appendChild(rule);return;
+    }
     if(!r.text){
-      const b=document.createElement('div');b.className='prow blank';previewBody.appendChild(b);return;
+      const b=document.createElement('div');b.className='prow blank'+(r.pageBreakBefore?' page-break':'');previewBody.appendChild(b);return;
     }
     const row=document.createElement('div');
     row.className=r.type==='plain'?'prow plain':`prow lv${r.level+1} ${r.type==='continue'?'cont':''}`;
+    if(r.pageBreakBefore)row.classList.add('page-break');
     row.dataset.marker=r.marker||'small-square';
     if(r.type!=='plain'){const m=document.createElement('span');m.className='pmark';m.textContent=markerFor(r.level,r.marker);row.appendChild(m);}
     const t=document.createElement('span');renderRuns(t,r.runs);row.appendChild(t);previewBody.appendChild(row);
@@ -1166,8 +1301,10 @@ function runXml(run){
   return `<w:r><w:rPr>${p}</w:rPr><w:t xml:space="preserve">${esc(run.text)}</w:t></w:r>`;
 }
 function paragraphXml(r){
-  if(!r.text)return '<w:p><w:pPr><w:spacing w:line="240" w:lineRule="auto"/></w:pPr></w:p>';
-  let ppr='<w:spacing w:line="240" w:lineRule="auto"/>';
+  const pageBreak=r.pageBreakBefore?'<w:pageBreakBefore/>':'';
+  if(r.type==='rule')return '<w:p><w:pPr>'+pageBreak+'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="667085"/></w:pBdr></w:pPr></w:p>';
+  if(!r.text)return '<w:p><w:pPr>'+pageBreak+'<w:spacing w:line="240" w:lineRule="auto"/></w:pPr></w:p>';
+  let ppr=pageBreak+'<w:spacing w:line="240" w:lineRule="auto"/>';
   if(r.type==='plain')ppr+='<w:ind w:left="0" w:firstLine="0"/>';
   else if(r.type==='continue'){
     const left=[360,640,1080,1520][r.level] ?? 0; ppr+=`<w:ind w:left="${left}"/>`;
@@ -1214,7 +1351,7 @@ function filename(){
 }
 document.getElementById('downloadBtn').onclick=async()=>{
   const rows=dataRows();
-  if(!rows.some(r=>r.text.trim())){alert('本文を入力してください。');return;}
+  if(!rows.some(r=>r.type==='rule' || r.text.trim())){alert('本文を入力してください。');return;}
   try{
     const zip=await JSZip.loadAsync(b64ToBytes(TEMPLATE_B64));
     await patchNumbering(zip);
