@@ -223,6 +223,7 @@ body{padding:0;height:100dvh;overflow:hidden}
       <details class="help-details">
         <summary>使い方</summary>
         <div class="help-content">
+          <p>行頭に「太字：」「赤字：」「赤太字：」を付けて本文を入力し、Enterを押すと、その行に書式を適用します。貼り付けにも対応します。例「太字：重要なお知らせ」。</p>
           <p>ファイル名は本文には表示されません。空欄の場合は本文の先頭行を使います。「今日の日付」を選ぶと、日本時間の今日の日付を保存名の末尾に「_20261026」の形式で追加します。本文に見出しを付けたい場合は先頭行に入力してください。</p>
           <p>行を選んで「本文」または記号ボタンを押すと、行の種類を変更できます。記号なしのインデント行は「記号なし」で作成します。</p>
           <p>次のページから始めたい行を選び、「改頁」を押してください。もう一度押すと解除します。区切りはWord保存・読込と下書きにも保持されます。「改ページ」だけの行を入力してEnterを押すか、文章に含めて貼り付けても設定できます。「、形式でコピー」にも改ページ行が含まれます。</p>
@@ -440,6 +441,19 @@ function moveCaretVertical(line,direction){
   return true;
 }
 
+function parseFormatCommand(value){
+  const match = /^(太字|赤字|赤太字)[:：][ \u3000]?([\s\S]*)$/.exec(value);
+  if(!match || !match[2].trim())return null;
+
+  const [,command,text]=match;
+  return {text,bold:command!=='赤字',red:command!=='太字'};
+}
+
+function writePastedBody(el,parsed){
+  if(parsed.formatRun)el.innerHTML=runsToHtml([parsed.formatRun]);
+  else el.textContent=parsed.body;
+}
+
 editor.addEventListener('keydown',e=>{
   const text=e.target.closest('.text'); if(!text)return;
   const line=text.closest('.line');
@@ -460,6 +474,16 @@ editor.addEventListener('keydown',e=>{
   if(e.isComposing || e.keyCode===229)return;
   if(e.key==='Enter'){
     e.preventDefault();
+    const formatRun=line.dataset.type==='rule'?null:parseFormatCommand(runsFrom(text).map(run=>run.text).join('').replace(/\n$/,''));
+    if(formatRun){
+      text.innerHTML=runsToHtml([formatRun]);
+      const next=makeLine({type:'plain'});
+      line.after(next);
+      placeCaret(next.querySelector('.text'),false);
+      render();
+      updateLevelButtons(next);
+      return;
+    }
     if(['水平線','---'].includes(text.textContent.trim())){
       const rule=rebuildLine(line,{level:0,type:'rule'});
       rule.querySelector('.text').textContent='';
@@ -619,7 +643,8 @@ function parsePastedLine(text){
     type='bullet'; level=0; marker='small-square'; body=body.slice(1).replace(/^[ 　]/,'');
   }
 
-  return {type,level,marker,body};
+  const formatRun=parseFormatCommand(body);
+  return {type,level,marker,body:formatRun?.text ?? body,formatRun};
 }
 
 editor.addEventListener('paste',e=>{
@@ -673,14 +698,14 @@ editor.addEventListener('paste',e=>{
     const parsed=parsePastedLine(first);
 
     if(parsed.type==='plain' && line.dataset.type!=='rule'){
-      target.textContent=parsed.body;
+      writePastedBody(target,parsed);
     }else{
       const converted=rebuildLine(line,{
         level:parsed.level,
         type:parsed.type,
         marker:parsed.marker
       });
-      converted.querySelector('.text').textContent=parsed.body;
+      writePastedBody(converted.querySelector('.text'),parsed);
       prev=converted;
     }
   }else{
@@ -715,7 +740,7 @@ editor.addEventListener('paste',e=>{
     t.className='text';
     t.contentEditable='true';
     t.spellcheck=false;
-    t.textContent=parsed.body;
+    writePastedBody(t,parsed);
     row.appendChild(t);
 
     prev.after(row);
@@ -729,7 +754,7 @@ editor.addEventListener('paste',e=>{
   }
   const lastText=prev.querySelector('.text');
   if(lastText){
-    lastText.textContent=(lastText.textContent||'') + afterText;
+    if(afterText)lastText.appendChild(document.createTextNode(afterText));
     placeCaret(lastText,true);
   }
 
