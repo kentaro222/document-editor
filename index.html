@@ -223,7 +223,7 @@ body{padding:0;height:100dvh;overflow:hidden}
       <details class="help-details">
         <summary>使い方</summary>
         <div class="help-content">
-          <p>行頭に「太字：」「赤字：」「赤太字：」を付けて本文を入力し、Enterを押すと、その行に書式を適用します。貼り付けにも対応します。例「太字：重要なお知らせ」。</p>
+          <p>文中で「太/文字/」「赤/文字/」「赤太/文字/」「黒/文字/」を使えます。Enterまたは貼り付けで、スラッシュで囲んだ部分に書式を適用します。例「提出は赤太/金曜日/、確認は赤/月曜日/です。」</p>
           <p>ファイル名は本文には表示されません。空欄の場合は本文の先頭行を使います。「今日の日付」を選ぶと、日本時間の今日の日付を保存名の末尾に「_20261026」の形式で追加します。本文に見出しを付けたい場合は先頭行に入力してください。</p>
           <p>行を選んで「本文」または記号ボタンを押すと、行の種類を変更できます。記号なしのインデント行は「記号なし」で作成します。</p>
           <p>次のページから始めたい行を選び、「改頁」を押してください。もう一度押すと解除します。区切りはWord保存・読込と下書きにも保持されます。「改ページ」だけの行を入力してEnterを押すか、文章に含めて貼り付けても設定できます。「、形式でコピー」にも改ページ行が含まれます。</p>
@@ -441,17 +441,87 @@ function moveCaretVertical(line,direction){
   return true;
 }
 
-function parseFormatCommand(value){
-  const match = /^(太字|赤字|赤太字)[:：][ \u3000]?([\s\S]*)$/.exec(value);
-  if(!match || !match[2].trim())return null;
+function formatInlineRuns(runs,caret=0){
+  const value=runs.map(run=>run.text).join('');
+  const commands=/(赤太|太|赤|黒)\/([^\/\r\n]+)\//g;
+  let match=commands.exec(value);
+  if(!match)return null;
 
-  const [,command,text]=match;
-  return {text,bold:command!=='赤字',red:command!=='太字'};
+  const result=[];
+  let index=0;
+  let offset=0;
+  let mappedCaret=caret;
+  function copyTo(end,command){
+    while(offset<end && index<runs.length){
+      const run=runs[index];
+      const length=Math.min(run.text.length,end-offset);
+      const text=run.text.slice(0,length);
+      if(command!==null){
+        result.push({
+          text,
+          bold:run.bold || command==='太' || command==='赤太',
+          red:command==='黒'?false:(run.red || command==='赤' || command==='赤太')
+        });
+      }
+      offset+=length;
+      if(length===run.text.length)index++;
+      else runs[index]={...run,text:run.text.slice(length)};
+    }
+  }
+
+  runs=runs.slice();
+  do{
+    const [token,command,body]=match;
+    const start=match.index;
+    const end=start+token.length;
+    const bodyStart=end-body.length-1;
+    copyTo(start,'');
+    copyTo(bodyStart,null);
+    copyTo(end-1,command);
+    copyTo(end,null);
+    mappedCaret-=Math.max(0,Math.min(caret,bodyStart)-start);
+    mappedCaret-=Number(caret>=end);
+  }while((match=commands.exec(value)));
+  copyTo(value.length,'');
+  return {runs:mergeRuns(result),caret:mappedCaret};
 }
 
-function writePastedBody(el,parsed){
-  if(parsed.formatRun)el.innerHTML=runsToHtml([parsed.formatRun]);
-  else el.textContent=parsed.body;
+function applyInlineCommandsOnEnter(line,text){
+  if(!text.textContent.includes('/'))return false;
+  const runs=runsFrom(text);
+  const selection=window.getSelection();
+  let caret=runs.reduce((length,run)=>length+run.text.length,0);
+  if(selection?.rangeCount){
+    const range=selection.getRangeAt(0);
+    if(text.contains(range.startContainer)){
+      const before=document.createRange();
+      before.selectNodeContents(text);
+      before.setEnd(range.startContainer,range.startOffset);
+      caret=runsFrom(before.cloneContents()).reduce((length,run)=>length+run.text.length,0);
+    }
+  }
+  const formatted=formatInlineRuns(runs,caret);
+  if(!formatted)return false;
+
+  const head=[],tail=[];
+  let remaining=formatted.caret;
+  for(const run of formatted.runs){
+    if(remaining>0)head.push({...run,text:run.text.slice(0,remaining)});
+    if(remaining<run.text.length)tail.push({...run,text:run.text.slice(remaining)});
+    remaining=Math.max(0,remaining-run.text.length);
+  }
+  text.innerHTML=runsToHtml(head);
+  const next=makeLine({type:'plain',html:runsToHtml(tail)});
+  line.after(next);
+  placeCaret(next.querySelector('.text'),false);
+  render();
+  updateLevelButtons(next);
+  return true;
+}
+
+function pastedBodyToHtml(value){
+  const runs=[{text:value,bold:false,red:false}];
+  return runsToHtml(formatInlineRuns(runs)?.runs ?? runs);
 }
 
 editor.addEventListener('keydown',e=>{
@@ -474,16 +544,7 @@ editor.addEventListener('keydown',e=>{
   if(e.isComposing || e.keyCode===229)return;
   if(e.key==='Enter'){
     e.preventDefault();
-    const formatRun=line.dataset.type==='rule'?null:parseFormatCommand(runsFrom(text).map(run=>run.text).join('').replace(/\n$/,''));
-    if(formatRun){
-      text.innerHTML=runsToHtml([formatRun]);
-      const next=makeLine({type:'plain'});
-      line.after(next);
-      placeCaret(next.querySelector('.text'),false);
-      render();
-      updateLevelButtons(next);
-      return;
-    }
+    if(line.dataset.type!=='rule' && applyInlineCommandsOnEnter(line,text))return;
     if(['水平線','---'].includes(text.textContent.trim())){
       const rule=rebuildLine(line,{level:0,type:'rule'});
       rule.querySelector('.text').textContent='';
@@ -643,8 +704,7 @@ function parsePastedLine(text){
     type='bullet'; level=0; marker='small-square'; body=body.slice(1).replace(/^[ 　]/,'');
   }
 
-  const formatRun=parseFormatCommand(body);
-  return {type,level,marker,body:formatRun?.text ?? body,formatRun};
+  return {type,level,marker,body};
 }
 
 editor.addEventListener('paste',e=>{
@@ -662,19 +722,23 @@ editor.addEventListener('paste',e=>{
   const sel=window.getSelection();
   const range=sel && sel.rangeCount ? sel.getRangeAt(0) : null;
 
-  let beforeText='', afterText='';
-  if(range && target.contains(range.startContainer)){
+  let beforeText='', beforeContent=null, afterContent=null;
+  if(range && target.contains(range.startContainer) && target.contains(range.endContainer)){
     const before=document.createRange();
     before.selectNodeContents(target);
     before.setEnd(range.startContainer,range.startOffset);
-    beforeText=before.cloneContents().textContent||'';
+    beforeContent=before.cloneContents();
+    beforeText=beforeContent.textContent||'';
 
     const after=document.createRange();
     after.selectNodeContents(target);
     after.setStart(range.endContainer,range.endOffset);
-    afterText=after.cloneContents().textContent||'';
+    afterContent=after.cloneContents();
   }else{
     beforeText=target.textContent||'';
+    const contents=document.createRange();
+    contents.selectNodeContents(target);
+    beforeContent=contents.cloneContents();
   }
 
   const pasted=[];
@@ -698,19 +762,20 @@ editor.addEventListener('paste',e=>{
     const parsed=parsePastedLine(first);
 
     if(parsed.type==='plain' && line.dataset.type!=='rule'){
-      writePastedBody(target,parsed);
+      target.innerHTML=pastedBodyToHtml(parsed.body);
     }else{
       const converted=rebuildLine(line,{
         level:parsed.level,
         type:parsed.type,
         marker:parsed.marker
       });
-      writePastedBody(converted.querySelector('.text'),parsed);
+      converted.querySelector('.text').innerHTML=pastedBodyToHtml(parsed.body);
       prev=converted;
     }
   }else{
     // 行の途中に貼り付けた場合は記法として解釈せず、そのまま文字として挿入。
-    target.textContent=beforeText + first;
+    target.replaceChildren(beforeContent);
+    target.insertAdjacentHTML('beforeend',pastedBodyToHtml(first));
   }
 
   if(firstRow.pageBreakBefore)prev.dataset.pageBreak='true';
@@ -740,7 +805,7 @@ editor.addEventListener('paste',e=>{
     t.className='text';
     t.contentEditable='true';
     t.spellcheck=false;
-    writePastedBody(t,parsed);
+    t.innerHTML=pastedBodyToHtml(parsed.body);
     row.appendChild(t);
 
     prev.after(row);
@@ -748,13 +813,13 @@ editor.addEventListener('paste',e=>{
   }
 
   // 元のカーソルより後ろにあった文字は最後の貼り付け行へ戻す。
-  if(prev.dataset.type==='rule' && afterText){
+  if(prev.dataset.type==='rule' && afterContent?.textContent){
     const next=makeLine({type:'plain'});
     prev.after(next); prev=next;
   }
   const lastText=prev.querySelector('.text');
   if(lastText){
-    if(afterText)lastText.appendChild(document.createTextNode(afterText));
+    if(afterContent?.textContent)lastText.appendChild(afterContent);
     placeCaret(lastText,true);
   }
 
