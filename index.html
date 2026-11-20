@@ -124,11 +124,11 @@ summary{cursor:pointer;font-weight:700;padding:6px 0}
         <summary>使い方</summary>
         <div class="help">
           <p>ファイル名が空欄なら本文の先頭行を使います。「今日の日付」を選ぶと、日本時間の日付を「_20261120」の形式で付けます。</p>
-          <p>文中に「#文字#」（太字）、「##文字##」（赤字）、「###文字###」（赤字＋太字）、「黒#文字#」（黒字）と入力し、Enterを押します。貼り付けでも適用でき、１行に複数指定できます。</p>
+          <p>文中に「**文字**」（太字）、「!!文字!!」（赤字）、「**!!文字!!**」（赤字＋太字）、「黒#文字#」（黒字）と入力し、Enterを押します。貼り付けでも適用でき、１行に複数指定できます。</p>
           <p>文字を選択して「B」「赤字」「黒字」を押すと、選択範囲に適用します。カーソルだけのときは、次に入力する文字に適用します。</p>
           <p>行を選んで本文や箇条書きを切り替えます。「記号なし」はインデントを残します。Enterで本文行を追加します。貼り付け時に行頭の「、」「、、」「、、、」を箇条書きに、「、。」「、、。」「、、、。」を記号なしのインデント行に変換します。</p>
           <p>「改頁」はこの行からの改ページを切り替えます。「―」は水平線を挿入します。「改ページ」「水平線」「---」だけの行を入力してEnterを押すか、貼り付けても設定できます。</p>
-          <p>「コピー」は箇条書きを「、形式」、太字・赤字を「# コマンド」に戻してコピーします。貼り付けると書式を復元できます。編集中の内容は、このブラウザに自動保存されます。</p>
+          <p>「コピー」は箇条書きを「、形式」、太字・赤字を「**」と「!!」のコマンドに戻してコピーします。貼り付けると書式を復元できます。編集中の内容は、このブラウザに自動保存されます。</p>
         </div>
       </details>
       <button class="action" id="resetBtn" type="button">リセット</button>
@@ -268,23 +268,46 @@ function sliceRuns(runs,start,end=Infinity){
   return part;
 }
 
-function formatHashRuns(runs,caret=0){
+function formatCommandRuns(runs,caret=0){
   const value=runs.map(run=>run.text).join('');
-  if(!/[#\\]/.test(value))return null;
+  if(!/[*!#\\]/.test(value))return null;
 
-  const command=/(黒)?(#{1,3})(?!#)((?:\\[\\#黒:]|[^#\\\r\n]|\\(?![\\#黒:]))+)\2/y;
-  const openings=/\\[\\#黒:]|黒?#/g;
+  const commands=[
+    [/\*\*!!/y,'!!**',{bold:true,red:true}],
+    [/!!\*\*/y,'**!!',{bold:true,red:true}],
+    [/\*\*/y,'**',{bold:true}],
+    [/!!/y,'!!',{red:true}]
+  ];
+  const bodyPattern=/(?:\\[\\*!#黒:]|\\(?![\\*!#黒:])|(?!\*\*|!!)[^\\\r\n])+/y;
+  const blackCommand=/黒#((?:\\[\\*!#黒:]|[^#\\\r\n]|\\(?![\\*!#黒:]))+)#/y;
+  const openings=/\\[\\*!#黒:]|黒#|\*\*|!!/g;
   const links=[...value.matchAll(/(?:https?|ftp):\/\/[^\s<>"「」『』（）。、，；]+/gi)];
   const result=[];
   let offset=0;
   let mappedCaret=caret;
   let linkIndex=0;
-  let literalHashEnd=-1;
+  let literalEnd=-1;
+  let hasEscape=false;
 
   function readCommand(start){
-    command.lastIndex=start;
-    const match=command.exec(value);
-    return match && (!match[1]||match[2].length===1)?match:null;
+    blackCommand.lastIndex=start;
+    const black=blackCommand.exec(value);
+    if(black && value[blackCommand.lastIndex]!=='#'){
+      return {bodyStart:start+2,bodyEnd:blackCommand.lastIndex-1,end:blackCommand.lastIndex,style:{black:true}};
+    }
+
+    for(const [opening,closing,style] of commands){
+      opening.lastIndex=start;
+      if(!opening.test(value))continue;
+      const bodyStart=opening.lastIndex;
+      bodyPattern.lastIndex=bodyStart;
+      if(!bodyPattern.test(value))continue;
+      const bodyEnd=bodyPattern.lastIndex;
+      if(value.startsWith(closing,bodyEnd)){
+        return {bodyStart,bodyEnd,end:bodyEnd+closing.length,style};
+      }
+    }
+    return null;
   }
 
   function append(start,end,style){
@@ -304,7 +327,7 @@ function formatHashRuns(runs,caret=0){
 
   function appendUnescaped(start,end,style){
     let cursor=start;
-    for(const escaped of value.slice(start,end).matchAll(/\\[\\#黒:]/g)){
+    for(const escaped of value.slice(start,end).matchAll(/\\[\\*!#黒:]/g)){
       const index=start+escaped.index;
       append(cursor,index,style);
       discard(index,index+1);
@@ -316,48 +339,42 @@ function formatHashRuns(runs,caret=0){
   for(let opening;(opening=openings.exec(value));){
     const start=opening.index;
     if(opening[0].startsWith('\\')){
-      if(opening[0].endsWith('#'))literalHashEnd=start+opening[0].length;
+      literalEnd=start+opening[0].length;
+      hasEscape=true;
       continue;
     }
-    if(start!==offset && start!==literalHashEnd && value[start-1]==='#')continue;
+    if(start!==offset && start!==literalEnd && value[start-1]===value[start])continue;
     while(linkIndex<links.length && links[linkIndex].index+links[linkIndex][0].length<=start)linkIndex++;
     const link=links[linkIndex];
     if(start!==offset && link && link.index<=start)continue;
 
     const match=readCommand(start);
-    if(!match)continue;
-    const [token,black,delimiter,body]=match;
-    const end=start+token.length;
-    if(value[end]==='#' && !readCommand(end))continue;
-
-    const bodyEnd=end-delimiter.length;
-    const bodyStart=bodyEnd-body.length;
+    if(!match){
+      openings.lastIndex=start+1;
+      continue;
+    }
+    const {bodyStart,bodyEnd,end,style}=match;
     appendUnescaped(offset,start);
     discard(start,bodyStart);
-    appendUnescaped(bodyStart,bodyEnd,{
-      black:Boolean(black),
-      bold:!black && delimiter.length!==2,
-      red:delimiter.length>=2
-    });
+    appendUnescaped(bodyStart,bodyEnd,style);
     discard(bodyEnd,end);
     offset=end;
     openings.lastIndex=end;
   }
-  if(!offset)return null;
+  if(!offset && !hasEscape)return null;
   appendUnescaped(offset,value.length);
   return {runs:mergeRuns(result),caret:mappedCaret};
 }
 
-function hashCopyText(runs){
+function formatCopyText(runs){
   const text=runs.map(run=>run.text).join('');
-  if(!runs.some(run=>run.bold||run.red))return text;
 
   function encode(lineRuns,escapePlain=false){
     return lineRuns.map(run=>{
-      const width=run.bold?(run.red?3:1):(run.red?2:0);
-      if(!width)return escapePlain?run.text.replace(/[\\#黒:]/g,'\\$&'):run.text;
-      const marker='#'.repeat(width);
-      return marker+run.text.replace(/[\\#]/g,'\\$&')+marker;
+      const opening=(run.bold?'**':'')+(run.red?'!!':'');
+      if(!opening)return escapePlain?run.text.replace(/[\\*!#黒:]/g,'\\$&'):run.text;
+      const closing=(run.red?'!!':'')+(run.bold?'**':'');
+      return opening+run.text.replace(/[\\*!]/g,'\\$&')+closing;
     }).join('');
   }
 
@@ -365,10 +382,11 @@ function hashCopyText(runs){
   return text.split('\n').map(line=>{
     const lineRuns=mergeRuns(sliceRuns(runs,start,start+line.length));
     start+=line.length+1;
-    if(!lineRuns.some(run=>run.bold||run.red))return line;
+    if(!line)return line;
     const encoded=encode(lineRuns);
-    const decoded=formatHashRuns([{text:encoded}])?.runs;
-    const matches=decoded?.length===lineRuns.length && decoded.every((run,index)=>{
+    const plain=[{text:encoded,bold:false,red:false}];
+    const decoded=formatCommandRuns(plain)?.runs ?? plain;
+    const matches=decoded.length===lineRuns.length && decoded.every((run,index)=>{
       const original=lineRuns[index];
       return run.text===original.text && run.bold===original.bold && run.red===original.red;
     });
@@ -629,7 +647,7 @@ byId('ruleBtn').addEventListener('click',()=>addRule(selectedLine()));
 
 function splitLine(row,text,offset){
   const original=runsFrom(text);
-  const formatted=formatHashRuns(original,offset);
+  const formatted=formatCommandRuns(original,offset);
   const runs=formatted?.runs ?? original;
   const split=formatted?.caret ?? offset;
   writeRuns(text,sliceRuns(runs,0,split));
@@ -704,7 +722,7 @@ editor.addEventListener('keydown',event=>{
 
 function plainRuns(text){
   const runs=[{text,bold:false,red:false}];
-  return formatHashRuns(runs)?.runs ?? runs;
+  return formatCommandRuns(runs)?.runs ?? runs;
 }
 
 function parsePastedRow(value){
@@ -954,7 +972,7 @@ function dotText(rows){
   return rows.flatMap(row=>{
     const prefix=['bullet','continue'].includes(row.type)
       ? '、'.repeat(Math.min(3,row.level+1))+(row.type==='continue'?'。':'') : '';
-    const body=row.type==='rule'?'水平線':prefix+hashCopyText(row.runs);
+    const body=row.type==='rule'?'水平線':prefix+formatCopyText(row.runs);
     return row.pageBreakBefore?['改ページ',body]:[body];
   }).join('\n');
 }
